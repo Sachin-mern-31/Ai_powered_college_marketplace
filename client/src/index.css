@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+  
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+  
+  html.dark body {
+    background-color: #090d16;
+    color: #f8fafc;
+  }
+}
+
+/* Minimalist Clean Cards & Modals */
+.clean-card {
+  @apply bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.clean-panel {
+  @apply bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md border border-slate-200 dark:border-slate-800/80;
+}
+
+.clean-modal {
+  @apply bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl;
+}
+
+.clean-input {
+  @apply bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-150;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
