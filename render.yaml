@@ -1,9 +1,10 @@
 services:
   - type: web
-    name: campusexchange
+    name: campusexchange-api
     env: node
-    buildCommand: npm run render-build
-    startCommand: npm start
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -16,4 +17,6 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: GEMINI_API_KEY
+        sync: false
+      - key: CLIENT_URL
         sync: false
