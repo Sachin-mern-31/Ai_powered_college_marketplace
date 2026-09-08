@@ -74,15 +74,17 @@ export const registerUser = async (req, res) => {
       inMemoryDb.users.set(newUserObj._id, newUserObj);
     }
 
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+});
+
     const { accessToken, refreshToken } = generateTokens(newUserObj);
 
     // Set httpOnly cookie for refresh token
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    res.cookie('refreshToken', refreshToken, getCookieOptions());
 
     return res.status(201).json({
       message: 'Account registered successfully!',
@@ -139,12 +141,7 @@ export const loginUser = async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user);
 
     // Set httpOnly Cookie
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('refreshToken', refreshToken, getCookieOptions());
 
     return res.json({
       message: 'Logged in successfully.',
@@ -196,11 +193,7 @@ export const refreshToken = (req, res) => {
 
 // 4. LOGOUT USER
 export const logoutUser = (req, res) => {
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
+  res.clearCookie('refreshToken', getCookieOptions());
   return res.json({ message: 'Logged out successfully.' });
 };
 

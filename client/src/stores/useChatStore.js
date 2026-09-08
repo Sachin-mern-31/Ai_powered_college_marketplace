@@ -16,8 +16,19 @@ export const useChatStore = create((set, get) => ({
 
   initSocket: () => {
     if (!socket) {
-      socket = io(window.location.origin, {
-        withCredentials: true
+      let socketUrl = window.location.origin;
+      const apiBase = import.meta.env.VITE_API_BASE_URL;
+      const customSocketUrl = import.meta.env.VITE_SOCKET_URL;
+
+      if (customSocketUrl) {
+        socketUrl = customSocketUrl;
+      } else if (apiBase && apiBase.startsWith('http')) {
+        socketUrl = apiBase.replace(/\/api\/?$/, '');
+      }
+
+      socket = io(socketUrl, {
+        withCredentials: true,
+        transports: ['websocket', 'polling']
       });
 
       socket.on('newMessage', (message) => {
