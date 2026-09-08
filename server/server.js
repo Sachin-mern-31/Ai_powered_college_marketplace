@@ -146,8 +146,12 @@ server.on('error', (err) => {
   }
 });
 
-server.listen(PORT, async () => {
-  await connectDB();
-  console.log(` CampusExchange API Server running on port ${PORT}`);
-  console.log(` Target Client URL: ${CLIENT_URL}`);
-});
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  server.listen(PORT, async () => {
+    await connectDB();
+    console.log(` CampusExchange API Server running on port ${PORT}`);
+    console.log(` Target Client URL: ${CLIENT_URL}`);
+  });
+}
+
+export default app;
