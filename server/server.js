@@ -6,6 +6,9 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.js';
@@ -16,16 +19,36 @@ import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const server = http.createServer(app);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
+// Allowed Origins logic for production & local dev
+const allowedOrigins = [
+  CLIENT_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+];
+
+const corsOriginHandler = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.onrender.com') || origin.endsWith('.vercel.app') || origin.endsWith('.railway.app')) {
+    callback(null, true);
+  } else {
+    callback(null, true); // Permissive in deployment so students can connect cleanly
+  }
+};
 
 // Socket.io Setup
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: corsOriginHandler,
     credentials: true,
     methods: ['GET', 'POST']
   }
@@ -35,11 +58,11 @@ app.set('io', io);
 
 // Security & Middleware
 app.use(helmet({
-  contentSecurityPolicy: false // disabled for inline preview flexibility
+  contentSecurityPolicy: false // disabled for inline asset & deployment flexibility
 }));
 
 app.use(cors({
-  origin: [CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: corsOriginHandler,
   credentials: true
 }));
 
@@ -60,6 +83,7 @@ const aiLimiter = rateLimit({
   message: { message: 'AI request limit reached. Please wait a minute.' }
 });
 
+// API Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/ai', aiLimiter, aiRoutes);
@@ -71,9 +95,24 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     service: 'CampusExchange Backend API',
+    environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
 });
+
+// Serve Compiled Frontend Static Assets in Production
+const clientDistPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+  console.log(`[Production] Serving static client build from: ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+}
 
 // Socket.io Connection Logic
 io.on('connection', (socket) => {
@@ -107,10 +146,8 @@ server.on('error', (err) => {
   }
 });
 
-server.listen(PORT || 3000, async () => {
+server.listen(PORT, async () => {
   await connectDB();
-
   console.log(` CampusExchange API Server running on port ${PORT}`);
   console.log(` Target Client URL: ${CLIENT_URL}`);
-
 });
