@@ -6,6 +6,14 @@ import { inMemoryDb } from '../config/db.js';
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'campusexchange_super_secret_access_key_2026_x987';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'campusexchange_super_secret_refresh_key_2026_y654';
 
+// Cookie options for refresh token (cross-origin production safe)
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+});
+
 // Utility to generate JWT tokens
 export const generateTokens = (user) => {
   const payload = {
@@ -74,12 +82,6 @@ export const registerUser = async (req, res) => {
       inMemoryDb.users.set(newUserObj._id, newUserObj);
     }
 
-const getCookieOptions = () => ({
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-});
 
     const { accessToken, refreshToken } = generateTokens(newUserObj);
 
