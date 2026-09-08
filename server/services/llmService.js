@@ -30,7 +30,7 @@ function getAIClient() {
 async function getActiveListingsContext() {
   try {
     let items = [];
-    if (!inMemoryDb.isInMemory) {
+    if (inMemoryDb.isConnectedToMongo) {
       items = await Listing.find({ status: 'active' }).limit(15);
     } else {
       items = Array.from(inMemoryDb.listings.values()).filter(i => i.status === 'active').slice(0, 15);

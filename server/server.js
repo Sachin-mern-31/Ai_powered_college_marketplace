@@ -99,19 +99,18 @@ app.use((err, req, res, next) => {
 // Start Server & Connect Database
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Error: Port ${PORT} is already in use by another process.`);
-    console.error(`👉 Close the process running on port ${PORT} or change PORT in server/.env\n`);
+    console.error(`\n Error: Port ${PORT} is already in use by another process.`);
+    console.error(` Close the process running on port ${PORT} or change PORT in server/.env\n`);
     process.exit(1);
   } else {
     console.error('Server error:', err);
   }
 });
 
-server.listen(PORT, async () => {
+server.listen(PORT || 3000, async () => {
   await connectDB();
-  console.log(`===================================================`);
-  console.log(`🚀 CampusExchange API Server running on port ${PORT}`);
-  console.log(`🎓 Target Client URL: ${CLIENT_URL}`);
-  console.log(`===================================================`);
-});
 
+  console.log(` CampusExchange API Server running on port ${PORT}`);
+  console.log(` Target Client URL: ${CLIENT_URL}`);
+
+});

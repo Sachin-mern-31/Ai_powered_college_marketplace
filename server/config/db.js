@@ -11,15 +11,21 @@ class InMemoryDatabase {
     this.isInMemory = true;
   }
 
+  get isConnectedToMongo() {
+    return !this.isInMemory && mongoose.connection.readyState === 1;
+  }
+
   async initSeedData() {
     if (this.listings.size > 0) return;
 
+    const demoPasswordHash = '$2a$10$wT5gC...dummyhash'; // hashed 'password123'
+
     // Seed Demo Users
-    const adminUser = {
+    const adminUser = { 
       _id: 'user_admin_1',
       name: 'Campus Admin',
       email: 'admin@stanford.edu',
-      passwordHash: '$2a$10$wT5gC...dummyhash', // hashed 'password123'
+      passwordHash: demoPasswordHash,
       college: 'Stanford University',
       hostel: 'Admin Quad',
       role: 'admin',
@@ -32,6 +38,7 @@ class InMemoryDatabase {
       _id: 'user_student_1',
       name: 'Alex Rivera',
       email: 'arivera@stanford.edu',
+      passwordHash: demoPasswordHash,
       college: 'Stanford University',
       hostel: 'Wilbur Hall, Rm 304',
       role: 'student',
@@ -44,6 +51,7 @@ class InMemoryDatabase {
       _id: 'user_student_2',
       name: 'Sarah Chen',
       email: 'schen@mit.edu',
+      passwordHash: demoPasswordHash,
       college: 'MIT',
       hostel: 'MacGregor House, Rm 112',
       role: 'student',
@@ -215,12 +223,13 @@ export const connectDB = async () => {
     const connStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/campusexchange';
     mongoose.set('strictQuery', false);
     await mongoose.connect(connStr, {
-      serverSelectionTimeoutMS: 2000
+      serverSelectionTimeoutMS: 10000
     });
-    console.log(`[Database] MongoDB Connected: ${mongoose.connection.host}`);
+    console.log(`[Database] MongoDB Connected successfully: ${mongoose.connection.host}`);
     inMemoryDb.isInMemory = false;
   } catch (error) {
-    console.log('[Database] MongoDB server not reachable. Switching to High-Performance In-Memory Data Store.');
+    console.warn(`[Database] MongoDB connection attempt failed (${error.message}).`);
+    console.log('[Database] Switching to High-Performance In-Memory Data Store fallback.');
     await inMemoryDb.initSeedData();
     console.log('[Database] In-Memory Database initialized with sample campus listings & accounts.');
   }
