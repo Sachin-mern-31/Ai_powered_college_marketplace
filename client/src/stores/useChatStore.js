@@ -17,7 +17,7 @@ export const useChatStore = create((set, get) => ({
   initSocket: () => {
     if (!socket) {
       let socketUrl = window.location.origin;
-      const apiBase = import.meta.env.VITE_API_BASE_URL;
+      const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
       const customSocketUrl = import.meta.env.VITE_SOCKET_URL;
 
       if (customSocketUrl) {
