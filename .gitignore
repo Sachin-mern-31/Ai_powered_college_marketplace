@@ -28,3 +28,9 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Lock files (let Vercel/Render install fresh)
+client/package-lock.json
+
+# Vite cache
+**/.vite/
